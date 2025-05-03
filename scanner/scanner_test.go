@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/nvkp/turtle/assert"
+	"github.com/erikh/turtle/assert"
 )
 
 var scanTestCases = map[string]struct {

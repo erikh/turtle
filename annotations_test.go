@@ -1,10 +1,9 @@
-package turtle_test
+package turtle
 
 import (
 	"testing"
 
-	"github.com/nvkp/turtle"
-	"github.com/nvkp/turtle/assert"
+	"github.com/erikh/turtle/assert"
 )
 
 type tripleWithAnnotationValues struct {
@@ -91,7 +90,7 @@ var marshalWithAnnotationTestCases = map[string]struct {
 func TestMarshalWithAnnotations(t *testing.T) {
 	for name, tc := range marshalWithAnnotationTestCases {
 		t.Run(name, func(t *testing.T) {
-			b, err := turtle.Marshal(tc.triples)
+			b, err := Marshal(tc.triples)
 			assert.Equal(t, tc.expString, string(b), "Marshal function should have returned a correct byte data")
 			assert.ErrorIs(t, err, tc.expErr, "Marshal function should have returned a correct error")
 		})
@@ -108,7 +107,7 @@ func TestUnmarshalStructWithLabel(t *testing.T) {
 		Label:     "en",
 	}
 
-	err := turtle.Unmarshal(data, &target)
+	err := Unmarshal(data, &target)
 	assert.NoError(t, err, "function Unmarshal should have returned no error")
 	assert.Equal(t, expected, target, "function Unmarshal should have assigned correct values to the target triple")
 }
@@ -123,7 +122,7 @@ func TestUnmarshalStructWithDataType(t *testing.T) {
 		DataType:  "xsd:string",
 	}
 
-	err := turtle.Unmarshal(data, &target)
+	err := Unmarshal(data, &target)
 	assert.NoError(t, err, "function Unmarshal should have returned no error")
 	assert.Equal(t, expected, target, "function Unmarshal should have assigned correct values to the target triple")
 }
@@ -138,7 +137,7 @@ func TestUnmarshalStructWithLabelPointer(t *testing.T) {
 		Label:     ptr("en"),
 	}
 
-	err := turtle.Unmarshal(data, &target)
+	err := Unmarshal(data, &target)
 
 	assert.NoError(t, err, "function Unmarshal should have returned no error")
 	assert.Equal(t, expected, target, "function Unmarshal should have assigned correct values to the target triple")

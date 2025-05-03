@@ -1,10 +1,9 @@
-package scanner_test
+package scanner
 
 import (
 	"testing"
 
-	"github.com/nvkp/turtle/assert"
-	"github.com/nvkp/turtle/scanner"
+	"github.com/erikh/turtle/assert"
 )
 
 var scannedFile = []byte(`
@@ -26,7 +25,7 @@ var expectedPrefixes = map[string]string{
 }
 
 func TestScannerBaseAndPrefixes(t *testing.T) {
-	s := scanner.New(scannedFile)
+	s := New(scannedFile)
 
 	for s.Next() {
 		_ = s.Triple()

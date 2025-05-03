@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/nvkp/turtle/graph"
-	"github.com/nvkp/turtle/scanner"
+	"github.com/erikh/turtle/graph"
+	"github.com/erikh/turtle/scanner"
 )
 
 type Config struct {

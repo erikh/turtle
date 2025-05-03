@@ -4,7 +4,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/nvkp/turtle/scanner"
+	"github.com/erikh/turtle/scanner"
 )
 
 const (

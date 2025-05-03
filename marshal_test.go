@@ -1,11 +1,10 @@
-package turtle_test
+package turtle
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/nvkp/turtle"
-	"github.com/nvkp/turtle/assert"
+	"github.com/erikh/turtle/assert"
 )
 
 type triple struct {
@@ -20,14 +19,16 @@ type tripleWithPointers struct {
 	Object    *string `turtle:"object"`
 }
 
-type subject string
-type predicate string
-type object string
+type (
+	subjectType   string
+	predicateType string
+	objectType    string
+)
 
 type namedTypeTriple struct {
-	s subject   `turtle:"subject"`
-	p predicate `turtle:"predicate"`
-	o object    `turtle:"object"`
+	s subjectType   `turtle:"subject"`
+	p predicateType `turtle:"predicate"`
+	o objectType    `turtle:"object"`
 }
 
 type tripleWithMetadata struct {
@@ -226,7 +227,7 @@ var marshalTestCases = map[string]struct {
 	"nil_input": {
 		triples:   nil,
 		expString: ``,
-		expErr:    turtle.ErrInvalidValueType,
+		expErr:    ErrInvalidValueType,
 	},
 	"no_subject_specified": {
 		triples: triple{
@@ -234,7 +235,7 @@ var marshalTestCases = map[string]struct {
 			Object:    "http://example.org/books/Huckleberry_Finn",
 		},
 		expString: ``,
-		expErr:    turtle.ErrNoSubjectSpecified,
+		expErr:    ErrNoSubjectSpecified,
 	},
 	"no_predicate_specified": {
 		triples: triple{
@@ -242,7 +243,7 @@ var marshalTestCases = map[string]struct {
 			Object:  "http://example.org/books/Huckleberry_Finn",
 		},
 		expString: ``,
-		expErr:    turtle.ErrNoPredicateSpecified,
+		expErr:    ErrNoPredicateSpecified,
 	},
 	"no_object_specified": {
 		triples: triple{
@@ -250,14 +251,14 @@ var marshalTestCases = map[string]struct {
 			Predicate: "http://example.org/relation/author",
 		},
 		expString: ``,
-		expErr:    turtle.ErrNoObjectSpecified,
+		expErr:    ErrNoObjectSpecified,
 	},
 }
 
 func TestMarshal(t *testing.T) {
 	for name, tc := range marshalTestCases {
 		t.Run(name, func(t *testing.T) {
-			b, err := turtle.Marshal(tc.triples)
+			b, err := Marshal(tc.triples)
 			assert.Equal(t, tc.expString, string(b), "Marshal function should have returned a correct byte data")
 			assert.ErrorIs(t, err, tc.expErr, "Marshal function should have returned a correct error")
 		})
@@ -271,7 +272,7 @@ func TestMarshalOptions(t *testing.T) {
 		Object:    "http://example.org/books/Huckleberry_Finn",
 	}
 
-	c := turtle.Config{
+	c := Config{
 		Base: "http://example.org",
 		Prefixes: map[string]string{
 			"book": "http://example.org/books/",
@@ -298,7 +299,7 @@ func TestMarshalOptions(t *testing.T) {
 
 	// check for weird rdf-isms like using a blank anchor as a prefix
 
-	c = turtle.Config{
+	c = Config{
 		Base: "http://example.org",
 		Prefixes: map[string]string{
 			"book": "http://example.org/books#",

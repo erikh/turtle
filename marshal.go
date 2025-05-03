@@ -5,7 +5,7 @@ import (
 
 	"errors"
 
-	"github.com/nvkp/turtle/graph"
+	"github.com/erikh/turtle/graph"
 )
 
 var (

@@ -3,7 +3,7 @@ package scanner
 import (
 	"testing"
 
-	"github.com/nvkp/turtle/assert"
+	"github.com/erikh/turtle/assert"
 )
 
 var sanitizeTestCases = map[string]struct {

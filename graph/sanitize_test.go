@@ -3,7 +3,7 @@ package graph
 import (
 	"testing"
 
-	"github.com/nvkp/turtle/assert"
+	"github.com/erikh/turtle/assert"
 )
 
 var sanitizesTestCases = map[string]struct {

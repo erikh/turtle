@@ -1,10 +1,9 @@
-package graph_test
+package graph
 
 import (
 	"testing"
 
-	"github.com/nvkp/turtle/assert"
-	"github.com/nvkp/turtle/graph"
+	"github.com/erikh/turtle/assert"
 )
 
 var graphTestCases = map[string]struct {
@@ -55,7 +54,7 @@ var graphTestCases = map[string]struct {
 func TestGraph(t *testing.T) {
 	for name, tc := range graphTestCases {
 		t.Run(name, func(t *testing.T) {
-			g := graph.New()
+			g := New()
 
 			for _, triple := range tc.triples {
 				_ = g.Accept(triple)

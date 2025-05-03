@@ -1,10 +1,9 @@
-package turtle_test
+package turtle
 
 import (
 	"testing"
 
-	"github.com/nvkp/turtle"
-	"github.com/nvkp/turtle/assert"
+	"github.com/erikh/turtle/assert"
 )
 
 func ptr[T any](v T) *T {
@@ -20,7 +19,7 @@ func TestUnmarshalStruct(t *testing.T) {
 		Object:    "http://example.org/books/Huckleberry_Finn",
 	}
 
-	err := turtle.Unmarshal(data, &target)
+	err := Unmarshal(data, &target)
 	assert.NoError(t, err, "function Unmarshal should have returned no error")
 	assert.Equal(t, expected, target, "function Unmarshal should have assigned correct values to the target triple")
 }
@@ -42,7 +41,7 @@ func TestUnmarshalSlice(t *testing.T) {
 		},
 	}
 
-	err := turtle.Unmarshal(data, &target)
+	err := Unmarshal(data, &target)
 	assert.NoError(t, err, "function Unmarshal should have returned no error")
 	assert.Equal(t, expected, target, "function Unmarshal should have assigned correct values to the target slice")
 }
@@ -66,7 +65,7 @@ func TestUnmarshalCompact(t *testing.T) {
 		{"http://example.org/spiderman", "http://xmlns.com/foaf/0.1/name", "Человек-паук"},
 	}
 
-	err := turtle.Unmarshal(data, &target)
+	err := Unmarshal(data, &target)
 	assert.NoError(t, err, "function Unmarshal should have returned no error")
 	assert.Equal(t, expected, target, "function Unmarshal should have assigned correct values to the target slice")
 }
@@ -88,7 +87,7 @@ func TestUnmarshalSliceOfPointers(t *testing.T) {
 		},
 	}
 
-	err := turtle.Unmarshal(data, &target)
+	err := Unmarshal(data, &target)
 	assert.NoError(t, err, "function Unmarshal should have returned no error")
 	assert.Equal(t, expected, target, "function Unmarshal should have assigned correct values to the target slice")
 }
@@ -110,7 +109,7 @@ func TestUnmarshalSliceStructsWithPointers(t *testing.T) {
 		},
 	}
 
-	err := turtle.Unmarshal(data, &target)
+	err := Unmarshal(data, &target)
 	assert.NoError(t, err, "function Unmarshal should have returned no error")
 	assert.Equal(t, expected, target, "function Unmarshal should have assigned correct values to the target slice")
 }
@@ -118,16 +117,16 @@ func TestUnmarshalSliceStructsWithPointers(t *testing.T) {
 func TestUnmarshalNil(t *testing.T) {
 	data := []byte(`<http://example.org/person/Mark_Twain> <http://example.org/relation/author> <http://example.org/books/Huckleberry_Finn> .`)
 
-	err := turtle.Unmarshal(data, nil)
-	assert.ErrorIs(t, err, turtle.ErrNilValue, "function Unmarshal should have returned correct error")
+	err := Unmarshal(data, nil)
+	assert.ErrorIs(t, err, ErrNilValue, "function Unmarshal should have returned correct error")
 }
 
 func TestUnmarshalNotAPointer(t *testing.T) {
 	var target triple
 	data := []byte(`<http://example.org/person/Mark_Twain> <http://example.org/relation/author> <http://example.org/books/Huckleberry_Finn> .`)
 
-	err := turtle.Unmarshal(data, target)
-	assert.ErrorIs(t, err, turtle.ErrNoPointerValue, "function Unmarshal should have returned correct error")
+	err := Unmarshal(data, target)
+	assert.ErrorIs(t, err, ErrNoPointerValue, "function Unmarshal should have returned correct error")
 }
 
 func TestUnmarshalBaseAndPrefixes(t *testing.T) {
@@ -147,11 +146,11 @@ func TestUnmarshalBaseAndPrefixes(t *testing.T) {
 		},
 	}
 
-	err := turtle.Unmarshal(data, &target)
+	err := Unmarshal(data, &target)
 	assert.NoError(t, err, "got an error unmarshaling turtle with base and prefixes")
 	assert.Equal(t, expected, target, "not equal to expected data")
 
-	c := turtle.Config{
+	c := Config{
 		ResolveURLs: true,
 	}
 
@@ -174,7 +173,7 @@ func TestUnmarshalBaseAndPrefixes(t *testing.T) {
 	data = []byte(`
 </person/Mark_Twain> </relation/author> books:Huckleberry_Finn .`)
 
-	c = turtle.Config{
+	c = Config{
 		ResolveURLs: true,
 		Base:        "http://example.org/",
 		Prefixes: map[string]string{
