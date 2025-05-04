@@ -265,6 +265,19 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
+func TestMarshalPrefixBase(t *testing.T) {
+	_, err := Marshal(tripleWithMetadata{
+		Subject:   "http://example.org/Mark_Twain",
+		Predicate: "a",
+		Object:    "foaf:Person",
+		Prefixes: map[string]string{
+			"foaf": "http://xmlns.com/foaf/0.1",
+		},
+		Base: "http://example.org",
+	})
+	assert.NoError(t, err, "no error expected marshaling with base and prefixes")
+}
+
 func TestMarshalOptions(t *testing.T) {
 	trip := triple{
 		Subject:   "http://example.org/person/Mark_Twain",
