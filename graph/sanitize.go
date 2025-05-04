@@ -14,7 +14,7 @@ const (
 )
 
 func (g *Graph) sanitizeObject(obj object) string {
-	item := g.sanitize(obj.item, false)
+	item := g.sanitize(obj.item, obj.typ)
 
 	if obj.label != "" {
 		return fmt.Sprintf("%s@%s", item, obj.label)
@@ -27,12 +27,16 @@ func (g *Graph) sanitizeObject(obj object) string {
 	return item
 }
 
-func (g *Graph) sanitize(str string, predicate bool) string {
+func (g *Graph) sanitize(str string, typ string) string {
 	if len(str) == 0 {
 		return str
 	}
 
-	if isIRI(str) {
+	if isBlankNode(str) {
+		return str
+	}
+
+	if typ == "iri" || (typ == "" && isIRI(str)) {
 		if g.options.ResolveURLs {
 			for key, prefix := range g.options.Prefixes {
 				if strings.HasPrefix(str, prefix) {
@@ -52,17 +56,8 @@ func (g *Graph) sanitize(str string, predicate bool) string {
 		return fmt.Sprintf("<%s>", str)
 	}
 
-	if isBlankNode(str) {
-		return str
-	}
-
-	if !isBlankNode(str) && !predicate {
-		edge := literalEdge(str)
-
-		return fmt.Sprintf("%s%s%s", edge, str, edge)
-	}
-
-	return str
+	edge := literalEdge(str)
+	return fmt.Sprintf("%s%s%s", edge, str, edge)
 }
 
 func isBlankNode(str string) bool {

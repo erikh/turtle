@@ -29,7 +29,7 @@ var regexBlankNode = regexp.MustCompile(`_:.+`)
 // the next triple to be read.
 type Scanner struct {
 	options          Options
-	t                [][5]string
+	t                [][6]string
 	data             []byte
 	scanByteCounter  *scanByteCounter
 	s                *bufio.Scanner
@@ -65,6 +65,7 @@ type collectionItem struct {
 	label     string
 	datatype  string
 	blankNode string
+	typ       string
 }
 
 // New accepts a byte slice of the Turtle data and returns a new scanner.Scanner.
@@ -89,7 +90,7 @@ func NewWithOptions(data []byte, options Options) *Scanner {
 		data:            data,
 		scanByteCounter: counter,
 		s:               s,
-		t:               make([][5]string, 0),
+		t:               make([][6]string, 0),
 		base:            base,
 		prefixes:        prefixes,
 		blankNodes:      make(map[string]struct{}),
@@ -239,12 +240,13 @@ func (s *Scanner) Next() bool {
 		}
 
 		if token != ")" && s.inCollection() {
-			token, label, datatype := s.sanitize(token)
+			token, label, datatype, typ := s.sanitize(token)
 			item := collectionItem{
 				token:     token,
 				label:     label,
 				datatype:  datatype,
 				blankNode: s.newBlankNode(),
+				typ:       typ,
 			}
 
 			s.colls[len(s.colls)-1].items = append(s.colls[len(s.colls)-1].items, item)
@@ -262,13 +264,13 @@ func (s *Scanner) Next() bool {
 
 			for i, item := range lastCollection.items {
 				// rdf first
-				s.t = append(s.t, [5]string{item.blankNode, rdfFirst, item.token, item.label, item.datatype})
+				s.t = append(s.t, [6]string{item.blankNode, rdfFirst, item.token, item.label, item.datatype, item.typ})
 				// rdf rest
 				rest := rdfNil
 				if i < len(lastCollection.items)-1 {
 					rest = lastCollection.items[i+1].blankNode
 				}
-				s.t = append(s.t, [5]string{item.blankNode, rdfRest, rest, "", ""})
+				s.t = append(s.t, [6]string{item.blankNode, rdfRest, rest, "", "", "iri"})
 			}
 
 			collectionStart := rdfNilInTurtle
@@ -295,7 +297,7 @@ func (s *Scanner) Next() bool {
 			continue
 		}
 
-		token, label, datatype := s.sanitize(token)
+		token, label, datatype, typ := s.sanitize(token)
 
 		// record blank node
 		if regexBlankNode.MatchString(token) {
@@ -318,7 +320,7 @@ func (s *Scanner) Next() bool {
 
 		// handle object
 		if s.curIndex == 2 {
-			s.t = append(s.t, [5]string{s.curSubject, s.curPredicate, token, label, datatype})
+			s.t = append(s.t, [6]string{s.curSubject, s.curPredicate, token, label, datatype, typ})
 			s.curIndex = 0
 			return true
 		}
@@ -334,9 +336,9 @@ func (s *Scanner) Triple() [3]string {
 }
 
 // TripleWithAnnotations returns the next triple with label and datatype
-func (s *Scanner) TripleWithAnnotations() [5]string {
+func (s *Scanner) TripleWithAnnotations() [6]string {
 	if len(s.t) == 0 {
-		return [5]string{}
+		return [6]string{}
 	}
 	return s.t[0]
 }

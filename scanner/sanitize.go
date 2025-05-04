@@ -11,8 +11,9 @@ const (
 	labelDelimiter    = "@"
 )
 
-func (s *Scanner) sanitize(token string) (string, string, string) {
+func (s *Scanner) sanitize(token string) (string, string, string, string) {
 	var label, datatype string
+	typ := "literal"
 
 	if !s.options.ResolveURLs {
 		// apply the stored prefixes
@@ -27,14 +28,8 @@ func (s *Scanner) sanitize(token string) (string, string, string) {
 
 	// apply the stored base
 	if strings.HasPrefix(token, "<") {
+		typ = "iri"
 		token = trim(token)
-		if s.options.ResolveURLs {
-			for prefix, value := range s.prefixes {
-				if strings.HasPrefix(token, value) {
-					token = fmt.Sprintf("%s:%s", prefix, strings.TrimPrefix(token, value))
-				}
-			}
-		}
 
 		u, _ := url.Parse(token)
 		if u == nil || u.Host == "" && s.base != "" {
@@ -52,31 +47,43 @@ func (s *Scanner) sanitize(token string) (string, string, string) {
 				}
 			}
 		}
-	}
+	} else if strings.HasPrefix(token, `"`) || strings.HasPrefix(token, "-") || strings.ContainsAny(token, "0123456789") {
+		typ = "literal"
 
-	// extract data type suffix
-	lastDataTypeIndex := lastIndex(token, dataTypeDelimiter)
-	if lastDataTypeIndex != -1 {
-		// Split the string into two parts
-		datatype = token[lastDataTypeIndex+len(dataTypeDelimiter):]
-		token = token[:lastDataTypeIndex]
-	}
+		// extract data type suffix
+		lastDataTypeIndex := lastIndex(token, dataTypeDelimiter)
+		if lastDataTypeIndex != -1 {
+			// Split the string into two parts
+			datatype = token[lastDataTypeIndex+len(dataTypeDelimiter):]
+			token = token[:lastDataTypeIndex]
+		}
 
-	// extract label suffix
-	lastLabelIndex := lastIndex(token, labelDelimiter)
-	if lastLabelIndex != -1 {
-		// Split the string into two parts
-		label = token[lastLabelIndex+len(labelDelimiter):]
-		token = token[:lastLabelIndex]
-	}
+		// extract label suffix
+		lastLabelIndex := lastIndex(token, labelDelimiter)
+		if lastLabelIndex != -1 {
+			// Split the string into two parts
+			label = token[lastLabelIndex+len(labelDelimiter):]
+			token = token[:lastLabelIndex]
+		}
+	} else {
+		typ = "iri"
 
-	// replace "a" keyword with rdf:type predicate
-	if token == "a" {
-		token = rdfTypeIRI
+		// replace "a" keyword with rdf:type predicate
+		if token == "a" {
+			token = rdfTypeIRI
+		}
+
+		if s.options.ResolveURLs {
+			for prefix, value := range s.prefixes {
+				if strings.HasPrefix(token, value) {
+					token = fmt.Sprintf("%s:%s", prefix, strings.TrimPrefix(token, value))
+				}
+			}
+		}
 	}
 
 	// trim token
-	return trim(token), label, datatype
+	return trim(token), label, datatype, typ
 }
 
 var trimmedPairs = []struct {

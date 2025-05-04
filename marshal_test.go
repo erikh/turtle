@@ -20,15 +20,17 @@ type tripleWithPointers struct {
 }
 
 type (
-	subjectType   string
-	predicateType string
-	objectType    string
+	subjectType    string
+	predicateType  string
+	objectType     string
+	objectTypeType string
 )
 
 type namedTypeTriple struct {
-	s subjectType   `turtle:"subject"`
-	p predicateType `turtle:"predicate"`
-	o objectType    `turtle:"object"`
+	s  subjectType    `turtle:"subject"`
+	p  predicateType  `turtle:"predicate"`
+	o  objectType     `turtle:"object"`
+	ot objectTypeType `turtle:"objecttype"`
 }
 
 type tripleWithMetadata struct {

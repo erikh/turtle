@@ -22,6 +22,7 @@ type Options struct {
 
 type object struct {
 	item     string
+	typ      string
 	datatype string
 	label    string
 }
@@ -54,8 +55,8 @@ func (g *Graph) Accept(t [3]string) error {
 
 // AcceptWithAnnotations stores a new triple with eventual label and data type
 // of the object literal to the graph.
-func (g *Graph) AcceptWithAnnotations(t [5]string) error {
-	return g.accept(t[0], t[1], object{item: t[2], label: t[3], datatype: t[4]})
+func (g *Graph) AcceptWithAnnotations(t [6]string) error {
+	return g.accept(t[0], t[1], object{item: t[2], label: t[3], datatype: t[4], typ: t[5]})
 }
 
 func (g *Graph) accept(sub string, pred string, obj object) error {
@@ -112,7 +113,7 @@ func (g *Graph) Bytes() ([]byte, error) {
 
 	subjects := g.sortSubjects()
 	for _, subject := range subjects {
-		b = append(b, []byte(fmt.Sprintf("%s ", g.sanitize(subject, false)))...)
+		b = append(b, []byte(fmt.Sprintf("%s ", g.sanitize(subject, "iri")))...)
 
 		predicates := sortPredicates(g.m[subject])
 
@@ -127,14 +128,14 @@ func (g *Graph) Bytes() ([]byte, error) {
 			// when single predicate for a subject
 			if len(predicates) == 1 {
 				// write the predicate
-				b = append(b, []byte(fmt.Sprintf("%s ", g.sanitize(predicate, true)))...)
+				b = append(b, []byte(fmt.Sprintf("%s ", g.sanitize(predicate, "iri")))...)
 				// write the predicate's objects
 				g.writeObjects(&b, objects)
 				continue
 			}
 
 			// when multiple predicates for subject write predicate on a new line with indentation
-			b = append(b, []byte(fmt.Sprintf("\n\t%s ", g.sanitize(predicate, true)))...)
+			b = append(b, []byte(fmt.Sprintf("\n\t%s ", g.sanitize(predicate, "iri")))...)
 
 			// write the predicate's objects
 			g.writeObjects(&b, objects)
