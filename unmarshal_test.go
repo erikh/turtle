@@ -187,3 +187,17 @@ func TestUnmarshalBaseAndPrefixes(t *testing.T) {
 	assert.NoError(t, err, "got an error unmarshaling turtle with base and prefixes")
 	assert.Equal(t, expected, target, "not equal to expected data")
 }
+
+func TestUnmarshalSubjectURLTrailingSlash(t *testing.T) {
+	var target triple
+	data := []byte(`<.> <http://example.org/relation/author> <http://example.org/books/Huckleberry_Finn> .`)
+	expected := triple{
+		Subject:   "http://example.org",
+		Predicate: "http://example.org/relation/author",
+		Object:    "http://example.org/books/Huckleberry_Finn",
+	}
+
+	err := (&Config{ResolveURLs: true, Base: "http://example.org"}).Unmarshal(data, &target)
+	assert.NoError(t, err, "function Unmarshal should have returned no error")
+	assert.Equal(t, expected, target, "function Unmarshal should have assigned correct values to the target triple")
+}

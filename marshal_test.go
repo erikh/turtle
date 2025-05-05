@@ -336,3 +336,16 @@ func TestMarshalOptions(t *testing.T) {
 </person/Mark_Twain> </relation/author> </books#Huckleberry_Finn> .
 `), "output was not equal")
 }
+
+func TestMarshalSubjectBaseURLTrailingSlash(t *testing.T) {
+	data := []byte("@base <http://example.org> .\n<.> </relation/author> </books/Huckleberry_Finn> .\n")
+	expected := triple{
+		Subject:   "http://example.org",
+		Predicate: "http://example.org/relation/author",
+		Object:    "http://example.org/books/Huckleberry_Finn",
+	}
+
+	out, err := (&Config{ResolveURLs: true, Base: "http://example.org"}).Marshal(expected)
+	assert.NoError(t, err, "function Unmarshal should have returned no error")
+	assert.Equal(t, string(out), string(data), "function Unmarshal should have assigned correct values to the target triple")
+}

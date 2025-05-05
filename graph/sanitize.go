@@ -39,6 +39,10 @@ func (g *Graph) sanitize(str string, typ string) string {
 
 	if typ == "iri" || (typ == "" && isIRI(str)) {
 		if g.options.ResolveURLs {
+			if str == "." && g.options.Base != "" {
+				return g.options.Base
+			}
+
 			if str == "a" {
 				return fmt.Sprintf("<%s>", rdfTypeIRI)
 			}
@@ -55,6 +59,12 @@ func (g *Graph) sanitize(str string, typ string) string {
 				}
 
 				return fmt.Sprintf("<%s>", strings.TrimPrefix(str, g.options.Base))
+			}
+		} else {
+			for key := range g.options.Prefixes {
+				if strings.HasPrefix(str, key+":") {
+					return str
+				}
 			}
 		}
 

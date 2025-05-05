@@ -3,6 +3,7 @@ package scanner
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -11,6 +12,8 @@ const (
 	labelDelimiter    = "@"
 )
 
+var numberRegex = regexp.MustCompile(`^[-0-9]+(?:\.[0-9]+)?`)
+
 func (s *Scanner) sanitize(token string) (string, string, string, string) {
 	var label, datatype string
 	typ := "literal"
@@ -18,11 +21,11 @@ func (s *Scanner) sanitize(token string) (string, string, string, string) {
 	if !s.options.ResolveURLs {
 		// apply the stored prefixes
 		for prefix, value := range s.prefixes {
-			if !strings.HasPrefix(token, fmt.Sprintf("%s:", prefix)) {
-				continue
+			if strings.HasPrefix(token, fmt.Sprintf("%s:", prefix)) {
+				i := strings.IndexAny(token, ":")
+				token = fmt.Sprintf("%s%s", value, token[i+1:])
+				break
 			}
-			i := strings.IndexAny(token, ":")
-			token = fmt.Sprintf("%s%s", value, token[i+1:])
 		}
 	}
 
@@ -41,13 +44,22 @@ func (s *Scanner) sanitize(token string) (string, string, string, string) {
 
 				token = s.base + token
 			} else if s.options.ResolveURLs {
-				b, err := url.Parse(s.base)
-				if err == nil {
-					token = b.JoinPath(token).String()
+				if token == "." && s.base != "" {
+					token = s.base
+				} else {
+					b, err := url.Parse(s.base)
+					if err == nil {
+						t := b.JoinPath(token)
+						if t.String() == b.String() {
+							token = s.base
+						} else {
+							token = t.String()
+						}
+					}
 				}
 			}
 		}
-	} else if strings.HasPrefix(token, `"`) || strings.HasPrefix(token, "-") || strings.ContainsAny(token, "0123456789") {
+	} else if strings.HasPrefix(token, `"`) || strings.HasPrefix(token, "-") || numberRegex.MatchString(token) {
 		typ = "literal"
 
 		// extract data type suffix
@@ -74,7 +86,12 @@ func (s *Scanner) sanitize(token string) (string, string, string, string) {
 		}
 
 		if s.options.ResolveURLs {
+			// expand prefixes then collapse them. slows things down but is correct.
 			for prefix, value := range s.prefixes {
+				if strings.HasPrefix(token, prefix+":") {
+					token = fmt.Sprintf("%s%s", value, strings.TrimPrefix(token, prefix+":"))
+				}
+
 				if strings.HasPrefix(token, value) {
 					token = fmt.Sprintf("%s:%s", prefix, strings.TrimPrefix(token, value))
 				}
