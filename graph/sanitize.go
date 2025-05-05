@@ -40,7 +40,7 @@ func (g *Graph) sanitize(str string, typ string) string {
 	if typ == "iri" || (typ == "" && isIRI(str)) {
 		if g.options.ResolveURLs {
 			if str == "a" {
-				return rdfTypeIRI
+				return fmt.Sprintf("<%s>", rdfTypeIRI)
 			}
 
 			for key := range g.options.Prefixes {
