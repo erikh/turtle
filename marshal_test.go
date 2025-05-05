@@ -309,7 +309,7 @@ func TestMarshalOptions(t *testing.T) {
 	assert.Equal(t, strings.TrimSpace(string(out)), strings.TrimSpace(`
 @base <http://example.org> .
 @prefix book: <http://example.org/books/> .
-</person/Mark_Twain> </relation/author> book:Huckleberry_Finn .
+</person/Mark_Twain> </relation/author> </books/Huckleberry_Finn> .
 `), "output was not equal")
 
 	// check for weird rdf-isms like using a blank anchor as a prefix
@@ -333,6 +333,6 @@ func TestMarshalOptions(t *testing.T) {
 	assert.Equal(t, strings.TrimSpace(string(out)), strings.TrimSpace(`
 @base <http://example.org> .
 @prefix book: <http://example.org/books#> .
-</person/Mark_Twain> </relation/author> book:Huckleberry_Finn .
+</person/Mark_Twain> </relation/author> </books#Huckleberry_Finn> .
 `), "output was not equal")
 }

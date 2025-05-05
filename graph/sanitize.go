@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	rdfTypeIRI     = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 	runeNewLine    = '\u000A' // \n
 	runeApostrophe = '\u0027' // '
 	runeQuotation  = '\u0022' // "
@@ -38,9 +39,13 @@ func (g *Graph) sanitize(str string, typ string) string {
 
 	if typ == "iri" || (typ == "" && isIRI(str)) {
 		if g.options.ResolveURLs {
-			for key, prefix := range g.options.Prefixes {
-				if strings.HasPrefix(str, prefix) {
-					return fmt.Sprintf("%s:%s", key, strings.TrimPrefix(str, prefix))
+			if str == "a" {
+				return rdfTypeIRI
+			}
+
+			for key := range g.options.Prefixes {
+				if strings.HasPrefix(str, key+":") {
+					return str
 				}
 			}
 
