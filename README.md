@@ -5,12 +5,14 @@
 
 This [Golang](https://go.dev/) package serves as a serializer and parser of the [Turtle](https://www.w3.org/TR/turtle/) format used for representing [RDF](https://www.w3.org/RDF/) data. This package covers most features of the format's **version 1.1**.
 
+This is a fork of (nvkp/turtle)[https://github.com/nvkp/turtle] that more comprehensively handles base, prefixes, and handles IRIs in a spec-compliant way. All URLs are expanded on parse, and made relative on marshal. Please see `turtle.Config` for a way of setting Base and Prefixes for your marshal routines.
+
 ## Usage
 
 To add this package as a dependency to you Golang module, run:
 
 ```shell
-go get github.com/nvkp/turtle
+go get github.com/erikh/turtle
 ```
 
 The API of the package follows the Golang's traditional pattern for serializing and parsing. The serializing operation happens through the `turtle.Marshal(v interface{}) ([]byte, error)` function. The function accepts the to-be-serialized data as an empty interface and returns the byte slice with the result and possible error value.
@@ -136,7 +138,6 @@ err := turtle.Unmarshal(
 
 If you want to resolve URLs automatically at parsing time, create a _configured_ parser with the `turtle.Config` struct. The fields are as follows:
 
-- ResolveURLs: dynamically expand or shorten URLs relative to Base and Prefixes
 - Base: configure `@base` without providing syntax
 - Prefixes: `map[string]string`, configure prefixes without providing syntax
 
@@ -146,7 +147,6 @@ Example:
 
 ```go
 c := turtle.Config{
-    ResolveURLs: true,
     Base:        "https://example.org/",
     Prefixes:    map[string]string{
         "people": "https://example.org/people/types/"
@@ -167,13 +167,12 @@ data, _ := c.Marshal(triple)
 // <https://example.org/people/Mark_Twain> <RDF IRI URL> <https://example.org/people/types/author> .
 ```
 
-For unmarshaling, `@base` and `@prefix` weigh into the behavior of `ResolveURLs`. They will overwrite any configured options before further resolution. To be absolutely sure what base and prefixes you are using, unmarshal them too.
+For unmarshaling, if `@base` or `@prefix` is encountered during parse, they will overwrite any configured options before further resolution. To be absolutely sure what base and prefixes you are using, unmarshal them too.
 
 Example:
 
 ```go
 c := turtle.Config{
-    ResolveURLs: true,
     Base:        "https://example.org/",
     Prefixes:    map[string]string{
         "people": "https://example.org/people/types/"
@@ -200,27 +199,19 @@ c.Unmarshal([]byte(doc), &triple)
 
 ## Existing Alternatives
 
+As mentioned prior
+
 There is at least one Golang package available on Github that lets you parse and serialize Turtle data: [github.com/deiu/rdf2go](https://github.com/deiu/rdf2go). Its API does not comply with the traditional way of parsing and serializing in Golang programs. It defines its own types appearing in the RDF domain as Triple, Graph, etc.
 
 When a user needs a package that would parse and serialize Turtle data, it is fair to suppose that the user has already defined its own RDF data types as triple or graph. In that case for using the above mentioned package, user has to create a logic for converting its triple data types into the package's data types and adding them to the package's graph structure.
 
 More "Golang way" that this package offers is to annotated the user's already defined structures and the package would read these annotations and behave accordingly.
 
-## Benchmarks
+## Authors
 
-This benchmark compares parsing and serializing operations of the [github.com/deiu/rdf2go](https://github.com/deiu/rdf2go) and [github.com/nvkp/turtle](https://github.com/nvkp/turtle) packages. Both serializing operations are performed on seven triples repeatadly. The parsing operations are performed on a sample of around 27 000 triples. Both parsing and serializing operations from the [github.com/nvkp/turtle](https://github.com/nvkp/turtle) are performed quicker and consume less memory.
+- Erik Hollensbe <erikhollensbe@proton.me> - this library
+- Petr Novák <novakpetr753@gmail.com> - original version at [nvkp/turtle](https://github.com/nvkp/turtle)
 
-```
+## License
 
-goos: linux
-goarch: amd64
-pkg: github.com/nvkp/turtletest
-cpu: AMD Ryzen 7 PRO 5850U with Radeon Graphics
-BenchmarkMarshalTurtle-16 205250 5801 ns/op
-BenchmarkMarshalRDF2Go-16 163112 6384 ns/op
-BenchmarkUnmarshalTurtle-16 9 123448964 ns/op
-BenchmarkUnmarshalRDF2Go-16 4 261741094 ns/op
-PASS
-ok github.com/nvkp/turtletest 7.738s
-
-```
+MIT
