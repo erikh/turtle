@@ -199,8 +199,6 @@ c.Unmarshal([]byte(doc), &triple)
 
 ## Existing Alternatives
 
-As mentioned prior
-
 There is at least one Golang package available on Github that lets you parse and serialize Turtle data: [github.com/deiu/rdf2go](https://github.com/deiu/rdf2go). Its API does not comply with the traditional way of parsing and serializing in Golang programs. It defines its own types appearing in the RDF domain as Triple, Graph, etc.
 
 When a user needs a package that would parse and serialize Turtle data, it is fair to suppose that the user has already defined its own RDF data types as triple or graph. In that case for using the above mentioned package, user has to create a logic for converting its triple data types into the package's data types and adding them to the package's graph structure.
