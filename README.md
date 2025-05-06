@@ -5,7 +5,7 @@
 
 This [Golang](https://go.dev/) package serves as a serializer and parser of the [Turtle](https://www.w3.org/TR/turtle/) format used for representing [RDF](https://www.w3.org/RDF/) data. This package covers most features of the format's **version 1.1**.
 
-This is a fork of (nvkp/turtle)[https://github.com/nvkp/turtle] that more comprehensively handles base, prefixes, and handles IRIs in a spec-compliant way. All URLs are expanded on parse, and made relative on marshal. Please see `turtle.Config` for a way of setting Base and Prefixes for your marshal routines.
+This is a fork of [nvkp/turtle](https://github.com/nvkp/turtle) that more comprehensively handles base, prefixes, and handles IRIs in a spec-compliant way. All URLs are expanded on parse, and made relative on marshal. Please see `turtle.Config` for a way of setting Base and Prefixes for your marshal routines.
 
 ## Usage
 
