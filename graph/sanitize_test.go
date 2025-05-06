@@ -7,10 +7,10 @@ import (
 )
 
 var sanitizesTestCases = map[string]struct {
-	str                string
-	expected           string
-	predicate_expected string
-	typ                string
+	str       string
+	expected  string
+	typ       string
+	predicate bool
 }{
 	"empty_string": {
 		str:      "",
@@ -53,13 +53,24 @@ literal`,
 literal'''`,
 		typ: "literal",
 	},
+	"a, not predicate": {
+		str:      "a",
+		expected: "<a>",
+		typ:      "iri",
+	},
+	"a, predicate": {
+		str:       "a",
+		expected:  "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>",
+		typ:       "iri",
+		predicate: true,
+	},
 }
 
 func TestSanitize(t *testing.T) {
 	g := New()
 	for name, tc := range sanitizesTestCases {
 		t.Run(name, func(t *testing.T) {
-			actual := g.sanitize(tc.str, tc.typ)
+			actual := g.sanitize(tc.str, tc.typ, tc.predicate)
 			assert.Equal(t, tc.expected, actual, "function should have returned correctly sanitized string")
 		})
 	}

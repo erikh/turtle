@@ -15,7 +15,7 @@ const (
 )
 
 func (g *Graph) sanitizeObject(obj object) string {
-	item := g.sanitize(obj.item, obj.typ)
+	item := g.sanitize(obj.item, obj.typ, false)
 
 	if obj.label != "" {
 		return fmt.Sprintf("%s@%s", item, obj.label)
@@ -28,7 +28,7 @@ func (g *Graph) sanitizeObject(obj object) string {
 	return item
 }
 
-func (g *Graph) sanitize(str string, typ string) string {
+func (g *Graph) sanitize(str string, typ string, predicate bool) string {
 	if len(str) == 0 {
 		return str
 	}
@@ -38,34 +38,26 @@ func (g *Graph) sanitize(str string, typ string) string {
 	}
 
 	if typ == "iri" || (typ == "" && isIRI(str)) {
-		if g.options.ResolveURLs {
-			if str == "." && g.options.Base != "" {
-				return g.options.Base
+		if str == "." && g.options.Base != "" {
+			return g.options.Base
+		}
+
+		if str == "a" && predicate {
+			return fmt.Sprintf("<%s>", rdfTypeIRI)
+		}
+
+		for key := range g.options.Prefixes {
+			if strings.HasPrefix(str, key+":") {
+				return str
+			}
+		}
+
+		if g.options.Base != "" && strings.HasPrefix(str, g.options.Base) {
+			if g.options.Base == str {
+				str = "."
 			}
 
-			if str == "a" {
-				return fmt.Sprintf("<%s>", rdfTypeIRI)
-			}
-
-			for key := range g.options.Prefixes {
-				if strings.HasPrefix(str, key+":") {
-					return str
-				}
-			}
-
-			if g.options.Base != "" && strings.HasPrefix(str, g.options.Base) {
-				if g.options.Base == str {
-					str = "."
-				}
-
-				return fmt.Sprintf("<%s>", strings.TrimPrefix(str, g.options.Base))
-			}
-		} else {
-			for key := range g.options.Prefixes {
-				if strings.HasPrefix(str, key+":") {
-					return str
-				}
-			}
+			return fmt.Sprintf("<%s>", strings.TrimPrefix(str, g.options.Base))
 		}
 
 		return fmt.Sprintf("<%s>", str)

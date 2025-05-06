@@ -7,16 +7,12 @@ import (
 
 // Options changes the behavior of the graph. It is passed to NewWithOptions.
 type Options struct {
-	// If true, will normalize URLs around the Base parameter and Prefixes for
-	// output.
-	ResolveURLs bool
-	// If set, will output a `@base` pragma at the start and if ResolveURLs is
-	// true will normalize all URLs that start with the base to their relative
-	// components.
+	// If set, will output a `@base` pragma at the start. Will normalize all URLs
+	// that start with the base to their relative components.
 	Base string
-	// If set, if ResolveURLs is true, any encountering of the prefix URL prefixes
-	// will be normalized to use the prefix. Additionally, @prefix lines are
-	// output at the top of the document for each one.
+	// If set, any encountering of the prefix URL prefixes will be normalized to
+	// use the prefix. Additionally, @prefix lines are output at the top of the
+	// document for each one.
 	Prefixes map[string]string
 }
 
@@ -113,7 +109,7 @@ func (g *Graph) Bytes() ([]byte, error) {
 
 	subjects := g.sortSubjects()
 	for _, subject := range subjects {
-		b = append(b, []byte(fmt.Sprintf("%s ", g.sanitize(subject, "iri")))...)
+		b = append(b, []byte(fmt.Sprintf("%s ", g.sanitize(subject, "iri", false)))...)
 
 		predicates := sortPredicates(g.m[subject])
 
@@ -128,14 +124,14 @@ func (g *Graph) Bytes() ([]byte, error) {
 			// when single predicate for a subject
 			if len(predicates) == 1 {
 				// write the predicate
-				b = append(b, []byte(fmt.Sprintf("%s ", g.sanitize(predicate, "iri")))...)
+				b = append(b, []byte(fmt.Sprintf("%s ", g.sanitize(predicate, "iri", true)))...)
 				// write the predicate's objects
 				g.writeObjects(&b, objects)
 				continue
 			}
 
 			// when multiple predicates for subject write predicate on a new line with indentation
-			b = append(b, []byte(fmt.Sprintf("\n\t%s ", g.sanitize(predicate, "iri")))...)
+			b = append(b, []byte(fmt.Sprintf("\n\t%s ", g.sanitize(predicate, "iri", true)))...)
 
 			// write the predicate's objects
 			g.writeObjects(&b, objects)

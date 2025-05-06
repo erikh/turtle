@@ -10,15 +10,11 @@ import (
 
 // Options changes the behavior of the scanner. It is passed to NewWithOptions.
 type Options struct {
-	// If true, will normalize URLs around the Base parameter and Prefixes for
-	// output, rewriting URLs that match.
-	ResolveURLs bool
-	// If set with ResolveURLs, URLs will be shortened to their relative
-	// representation to the base.
+	// If set, URLs will be shortened to their relative representation to the base.
 	Base string
-	// If set with ResolveURLs, URLs will be shortened to their relative
-	// representation to the base of the prefix on match, and the prefix applied.
-	// Resource tags ("<>") will be omitted from this representation.
+	// If set, URLs will be shortened to their relative representation to the
+	// base of the prefix on match, and the prefix applied. Resource tags ("<>")
+	// will be omitted from this representation.
 	Prefixes map[string]string
 }
 
@@ -144,11 +140,6 @@ func (s *Scanner) Next() bool {
 
 			value := strings.Trim(s.s.Text(), "<>")
 
-			// make the prefix appendable
-			if !strings.HasSuffix(value, "/") && !strings.HasSuffix(value, "#") {
-				value = fmt.Sprintf("%s/", value)
-			}
-
 			s.prefixes[prefix] = value
 			continue
 		}
@@ -159,14 +150,7 @@ func (s *Scanner) Next() bool {
 				return false
 			}
 
-			base := strings.Trim(s.s.Text(), "<>")
-
-			// make the base appendable
-			if !strings.HasSuffix(base, "/") && !strings.HasSuffix(base, "#") {
-				base = fmt.Sprintf("%s/", base)
-			}
-
-			s.base = base
+			s.base = strings.Trim(s.s.Text(), "<>")
 			continue
 		}
 

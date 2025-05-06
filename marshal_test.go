@@ -299,16 +299,6 @@ func TestMarshalOptions(t *testing.T) {
 	assert.Equal(t, strings.TrimSpace(string(out)), strings.TrimSpace(`
 @base <http://example.org> .
 @prefix book: <http://example.org/books/> .
-<http://example.org/person/Mark_Twain> <http://example.org/relation/author> <http://example.org/books/Huckleberry_Finn> .
-`), "output was not equal")
-
-	c.ResolveURLs = true
-
-	out, err = c.Marshal(trip)
-	assert.NoError(t, err, "no error was expected")
-	assert.Equal(t, strings.TrimSpace(string(out)), strings.TrimSpace(`
-@base <http://example.org> .
-@prefix book: <http://example.org/books/> .
 </person/Mark_Twain> </relation/author> </books/Huckleberry_Finn> .
 `), "output was not equal")
 
@@ -319,7 +309,6 @@ func TestMarshalOptions(t *testing.T) {
 		Prefixes: map[string]string{
 			"book": "http://example.org/books#",
 		},
-		ResolveURLs: true,
 	}
 
 	trip = triple{
@@ -345,7 +334,7 @@ func TestMarshalSubjectBaseURLTrailingSlash(t *testing.T) {
 		Object:    "http://example.org/books/Huckleberry_Finn",
 	}
 
-	out, err := (&Config{ResolveURLs: true, Base: "http://example.org"}).Marshal(expected)
+	out, err := (&Config{Base: "http://example.org"}).Marshal(expected)
 	assert.NoError(t, err, "function Unmarshal should have returned no error")
 	assert.Equal(t, string(out), string(data), "function Unmarshal should have assigned correct values to the target triple")
 }

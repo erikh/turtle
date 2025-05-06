@@ -47,7 +47,7 @@ var sanitizeTestCases = map[string]struct {
 	"iri": {
 		base:  "http://example.org/",
 		input: "</path>",
-		token: "/path",
+		token: "http://example.org/path",
 		typ:   "iri",
 	},
 }

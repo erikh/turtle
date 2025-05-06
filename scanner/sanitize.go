@@ -14,18 +14,36 @@ const (
 
 var numberRegex = regexp.MustCompile(`^[-0-9]+(?:\.[0-9]+)?`)
 
+func expandPrefix(token string, value string) string {
+	i := strings.Index(token, ":")
+	if len(token) <= i+1 {
+		return ""
+	} else {
+		if len(token) > i+2 && (token[i+1] == '/' || token[i+1] == '#') && value[len(value)-1] == token[i+1] {
+			// if characters exist for both, trim token since we were going to do that anyway
+			token = token[i+2:]
+		} else if !(token[i+1] == '/' || token[i+1] == '#') && !(value[len(value)-1] == '/' || value[len(value)-1] == '#') {
+			// inverse, no characters; we need to add a slash
+			token = fmt.Sprintf("/%s", token[i+1:])
+		} else {
+			// otherwise, just trim the colon
+			token = token[i+1:]
+		}
+
+		return fmt.Sprintf("<%s%s>", value, token)
+	}
+}
+
 func (s *Scanner) sanitize(token string) (string, string, string, string) {
 	var label, datatype string
 	typ := "literal"
 
-	if !s.options.ResolveURLs {
-		// apply the stored prefixes
-		for prefix, value := range s.prefixes {
-			if strings.HasPrefix(token, fmt.Sprintf("%s:", prefix)) {
-				i := strings.IndexAny(token, ":")
-				token = fmt.Sprintf("%s%s", value, token[i+1:])
-				break
-			}
+	// apply the stored prefixes
+	for prefix, value := range s.prefixes {
+		if strings.HasPrefix(token, fmt.Sprintf("%s:", prefix)) {
+			token = expandPrefix(token, value)
+			typ = "iri"
+			break
 		}
 	}
 
@@ -33,27 +51,29 @@ func (s *Scanner) sanitize(token string) (string, string, string, string) {
 	if strings.HasPrefix(token, "<") {
 		typ = "iri"
 		token = trim(token)
-
-		u, _ := url.Parse(token)
-		if u == nil || u.Host == "" && s.base != "" {
-			// special case for blank anchors
-			if s.base[len(s.base)-1] == '#' || token[0] == '#' {
-				if token != "" && token[0] == '#' {
-					token = token[1:]
-				}
-
-				token = s.base + token
-			} else if s.options.ResolveURLs {
-				if token == "." && s.base != "" {
-					token = s.base
+		// short path for easy ones
+		if (token == "." || token == "/") && s.base != "" {
+			token = s.base
+		} else {
+			u, _ := url.Parse(token)
+			if u == nil || u.Host == "" && s.base != "" {
+				// special case for blank anchors
+				if s.base[len(s.base)-1] == '#' && token[0] == '#' {
+					token = s.base + token[1:]
 				} else {
 					b, err := url.Parse(s.base)
 					if err == nil {
-						t := b.JoinPath(token)
-						if t.String() == b.String() {
-							token = s.base
+						if token[0] == '#' {
+							// if we have # on the token side, just append the token
+							token = b.String() + token
 						} else {
-							token = t.String()
+							t := b.JoinPath(token)
+							if t.String() == b.String() {
+								// preserve the original form (no slash possibly, String call appends one on domains)
+								token = s.base
+							} else {
+								token = t.String()
+							}
 						}
 					}
 				}
@@ -83,19 +103,6 @@ func (s *Scanner) sanitize(token string) (string, string, string, string) {
 		// replace "a" keyword with rdf:type predicate
 		if token == "a" {
 			token = rdfTypeIRI
-		}
-
-		if s.options.ResolveURLs {
-			// expand prefixes then collapse them. slows things down but is correct.
-			for prefix, value := range s.prefixes {
-				if strings.HasPrefix(token, prefix+":") {
-					token = fmt.Sprintf("%s%s", value, strings.TrimPrefix(token, prefix+":"))
-				}
-
-				if strings.HasPrefix(token, value) {
-					token = fmt.Sprintf("%s:%s", prefix, strings.TrimPrefix(token, value))
-				}
-			}
 		}
 	}
 
